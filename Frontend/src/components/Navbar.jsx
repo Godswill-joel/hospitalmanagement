@@ -1,5 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { navbarStyles } from "../assets/dummyStyles";
+import { User, Key } from "lucide-react";
+import { SignedOut, useClerk } from "@clerk/clerk-react";
 import { Link, useNavigate, useLocation, href } from 'react-router-dom';
 import logo from "../assets/logo.png";
 
@@ -70,8 +72,23 @@ export default function Navbar() {
                                         </Link>
                                     )
                                 })}
-
                             </div>
+                        </div>
+
+                        <div className={navbarStyles.rightContainer}>
+                            <SignedOut>
+                                <Link to='/doctor-admin/login' className={navbarStyles.doctorAdminButton}>
+                                    <User className={navbarStyles.doctorAdminIcon} />
+                                    <span className={navbarStyles.doctorAdminText}>
+                                        Doctor admin
+                                    </span>
+                                </Link>
+                                <button onClick={() => clerk.openSignIn()}
+                                    className={navbarStyles.loginButton}>
+                                    <Key className={navbarStyles.loginIcon} />
+                                    Login 
+                                </button>
+                            </SignedOut>
 
                         </div>
                     </div>
