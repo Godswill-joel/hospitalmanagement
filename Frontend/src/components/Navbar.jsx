@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { navbarStyles } from "../assets/dummyStyles";
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation, href } from 'react-router-dom';
 import logo from "../assets/logo.png";
 
 
@@ -18,10 +18,18 @@ export default function Navbar() {
             return false;
         }
     });
-    const location = useLocation();
-    const navRef = useRef(null);
-    const clerk = useClerk();
-    const navigate = useNavigate();
+    // const location = useLocation();
+    // const navRef = useRef(null);
+    // const clerk = useClerk();
+    // const navigate = useNavigate();
+
+    const navItem = [
+        { label: "Home", href: "/" },
+        { label: "Doctors", href: "/doctors" },
+        { label: "Services", href: "/services" },
+        { label: "Appointments", href: "/appointments" },
+        { label: "Contact", href: "/contact" },
+    ]
 
     return (
         <>
@@ -35,14 +43,39 @@ export default function Navbar() {
                         <Link to='/' className={navbarStyles.logoLink}>
                             <div className={navbarStyles.logoContainer}>
                                 <div className={navbarStyles.logoImageWrapper}>
-                                    <img src={logo} alt="Logo" className={navbarStyles.logoImage} /> 
+                                    <img src={logo} alt="Logo" className={navbarStyles.logoImage} />
                                 </div>
                             </div>
-
+                            <div className={navbarStyles.logoTextContainer}>
+                                <h1 className={navbarStyles.logoTitle}>
+                                    MediCare
+                                </h1>
+                                <p className={navbarStyles.logoSubtitle}>
+                                    Healthcare Solutions
+                                </p>
+                            </div>
                         </Link>
+
+                        <div className={navbarStyles.desktopNav}>
+                            <div className={navbarStyles.navItemsContainer}>
+                                {navItem.map((items) => {
+                                    const isActive = location.pathname === items.href;
+                                    return (
+                                        <Link key={items.href} to={items.href}
+                                            className={`${navbarStyles.navItem} ${isActive ?
+                                                navbarStyles.navItemActive :
+                                                navbarStyles.navItemInactive
+                                                }`}>
+                                            {items.label}
+                                        </Link>
+                                    )
+                                })}
+
+                            </div>
+
+                        </div>
                     </div>
                 </div>
-
             </nav>
         </>
     )
