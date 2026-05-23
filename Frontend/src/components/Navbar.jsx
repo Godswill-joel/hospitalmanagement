@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { navbarStyles } from "../assets/dummyStyles";
-import { User, Key } from "lucide-react";
-import { SignedOut, useClerk } from "@clerk/clerk-react";
+import { User, Key, X, Menu } from "lucide-react";
+import { SignedIn, SignedOut, SignIn, useClerk, UserButton } from "@clerk/clerk-react";
 import { Link, useNavigate, useLocation, href } from 'react-router-dom';
 import logo from "../assets/logo.png";
 
@@ -20,9 +20,9 @@ export default function Navbar() {
             return false;
         }
     });
-    // const location = useLocation();
+    const location = useLocation();
     // const navRef = useRef(null);
-    // const clerk = useClerk();
+    const clerk = useClerk();
     // const navigate = useNavigate();
 
     const navItem = [
@@ -86,13 +86,57 @@ export default function Navbar() {
                                 <button onClick={() => clerk.openSignIn()}
                                     className={navbarStyles.loginButton}>
                                     <Key className={navbarStyles.loginIcon} />
-                                    Login 
+                                    Login
                                 </button>
                             </SignedOut>
-
+                            <SignedIn>
+                                <UserButton />
+                            </SignedIn>
+                            <button onClick={() => setIsOpen(!isOpen)} className={navbarStyles.mobileToggle}>
+                                {isOpen ? (
+                                    <X className={navbarStyles.toggleIcon} />
+                                ) : (
+                                    <Menu className={navbarStyles.toggleIcon} />
+                                )}
+                            </button>
                         </div>
                     </div>
+
+                    {isOpen && (
+                        <div className={navbarStyles.mobileMenu}>
+                            {navItem.map((items, index) => {
+                                const isActive = location.pathname === items.href;
+                                return (
+                                    <Link key={index} to={items.href}
+                                        onClick={() => setIsOpen(false)}
+                                        className={`${navbarStyles.mobileMenuItem} ${isActive ?
+                                            navbarStyles.mobileMenuItemActive :
+                                            navbarStyles.mobileMenuItemInactive
+                                            }`}>
+                                        {items.label}
+                                    </Link>
+                                )
+                            })}
+
+                            <SignedOut >
+                                <Link to='/doctor-admin/login' className={navbarStyles.mobileDoctorAdminButton}
+                                    onClick={() => setIsOpen(false)}>
+                                    Doctor Admin
+                                </Link>
+                                <div className={navbarStyles.mobileLoginContainer}>
+                                    <button onClick={() => {
+                                        setIsOpen(false);
+                                        clerk.openSignIn()
+                                    }} className={navbarStyles.mobileLoginButton}>
+                                        Login
+                                    </button>
+                                </div>
+                            </SignedOut>
+                        </div>
+                    )}
                 </div>
+
+                <style>{navbarStyles.animationStyles}</style>
             </nav>
         </>
     )
