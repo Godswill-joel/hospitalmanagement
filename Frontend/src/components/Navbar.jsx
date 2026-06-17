@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { navbarStyles } from "../assets/dummyStyles";
 import { User, Key, X, Menu } from "lucide-react";
-import { SignedIn, SignedOut, SignIn, useClerk, UserButton } from "@clerk/clerk-react";
-import { Link, useNavigate, useLocation, href } from 'react-router-dom';
+import { SignedIn, SignedOut, useClerk, UserButton } from "@clerk/clerk-react";
+import { Link, useLocation,  } from 'react-router-dom';
 import logo from "../assets/logo.png";
 
 
@@ -21,7 +21,7 @@ export default function Navbar() {
         }
     });
     const location = useLocation();
-    // const navRef = useRef(null);
+    const navRef = useRef(null);
     const clerk = useClerk();
     // const navigate = useNavigate();
 
@@ -37,7 +37,8 @@ export default function Navbar() {
         <>
             <div className={navbarStyles.navbarBorder} >
             </div>
-            <nav className={`${navbarStyles.navbarContainer} ${showNavbar ? navbarStyles.navbarVisible : navbarStyles.navbarHidden
+            <nav ref={navRef}
+             className={`${navbarStyles.navbarContainer} ${showNavbar ? navbarStyles.navbarVisible : navbarStyles.navbarHidden
                 }`}>
                 <div className={navbarStyles.navbarContent}>
                     <div className={navbarStyles.flexContainer}>
