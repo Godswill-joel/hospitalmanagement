@@ -145,7 +145,7 @@ export async function createDoctor(req, res) {
 }
 
 
-// to get Doctor 
+// to get Doctors  
 export const getDoctors = async (req, res) => {
     try {
         const { q = "", limit: limitRaw = 200, page: pageRaw = 1 } = req.query;
@@ -233,12 +233,65 @@ export const getDoctors = async (req, res) => {
 };
 
 
-// to get doctor by id 
-export async function getDoctorById (req, res){
+// to get doctor by id to fetch one doctor 
+export async function getDoctorById(req, res) {
     try {
-        const {id} = req.params;
-        const doc = await Doctor.findById(id).select("password")
+        const { id } = req.params;
+        const doc = await Doctor.findById(id).select("-password").lean();
+        if (!doc) {
+            res.status(404).json({
+                success: false,
+                message: "Doctor not found "
+            });
+            return;
+        }
+
+        return res.status(200).json({ success: true, message: 'doctor found successfully', data: normalizeDocForClient(doc) });
+
     } catch (err) {
-        
+        console.error("getDoctorById error: ", err);
+        return res.status(500).json({ success: false, message: "Server error" });
+    }
+}
+
+// to update a Doctor 
+export async function updateDoctor(req, res) {
+    try {
+        const { id } = req.params;
+        const body = req.body || {};
+
+        if (!req.doctor || String(req.doctor._id || req.doctor.id) !== String(id)) {
+            return res.status(403).json({
+                success: false,
+                message: "Not authorized to update this doctor",
+            });
+        }
+
+        const existing = await Doctor.findById(id);
+
+        if (!existing) {
+            res.status(404).json({
+                success: false,
+                message: "Doctor not found",
+            });
+            return;
+        };
+        // if doctor exists then update the image else show  a warning 
+        if (req.file?.path) {
+            const uploaded = await uploadToCloudinary(req.file.path, "doctor");
+
+            if (uploaded) {
+                const previousPublicId = existing.imagePublicId;
+                existing.imageURl = uploaded?.secure_url || uploaded?.url || existing.imageURl;
+                existing.imagePublicId = uploaded?.public_id || uploaded?.publicId || existing.imagePublicId;
+                if (previousPublicId && previousPublicId !== existing.imagePublicId) {
+                    deleteFromcloudinanry(previousPublicId).catch((e) => console.warn(""))
+                }
+            }
+        }
+
+
+    } catch (err) {
+
     }
 }

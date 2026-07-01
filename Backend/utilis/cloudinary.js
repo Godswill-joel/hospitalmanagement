@@ -11,7 +11,7 @@ cloudinary.config({
 
 //upload files into cloudinary
 
-export async function uploadToCloudinary(filepath, folder = "Doctor") {
+export async function uploadToCloudinary(filepath, folder = "Doctors") {
     try {
         const result = await cloudinary.uploader.upload(filepath, {
             folder,
