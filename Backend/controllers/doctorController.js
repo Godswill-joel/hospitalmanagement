@@ -239,11 +239,11 @@ export async function getDoctorById(req, res) {
         const { id } = req.params;
         const doc = await Doctor.findById(id).select("-password").lean();
         if (!doc) {
-            res.status(404).json({
+            return res.status(404).json({
                 success: false,
                 message: "Doctor not found "
             });
-            return;
+            
         }
 
         return res.status(200).json({ success: true, message: 'doctor found successfully', data: normalizeDocForClient(doc) });
@@ -270,11 +270,11 @@ export async function updateDoctor(req, res) {
         const existing = await Doctor.findById(id);
 
         if (!existing) {
-            res.status(404).json({
+            return res.status(404).json({
                 success: false,
                 message: "Doctor not found",
             });
-            return;
+            
         };
         // if doctor exists then update the image else show  a warning 
         if (req.file?.path) {
@@ -288,10 +288,89 @@ export async function updateDoctor(req, res) {
                     deleteFromcloudinanry(previousPublicId).catch((e) => console.warn(""))
                 }
             }
+        } else if (body.imageURl) {
+            existing.imageURl = body.imageURl;
         }
 
+        if (body.schedule) existing.schedule = parseScheduleInput(body.schedule);
+
+        const updatable = ["name", "specialization", "experience", "qualification", "about", "location", "fee", "availability", "success" , "patients",  "ratings"];
+        updatable.forEach((k) => {if(body[k] !== undefined) existing[k] = body[k]; });
+
+        if (body.email && body.email !== existing.email) {
+            const other = await Doctor.findOne({email: body.email.toLowerCase() });
+            if (other && other._id.toString() !== id ){
+                return res.status(409).json({
+                    success: false,
+                    message: "Email already in use",
+                });
+                
+            };
+        };
+
+        if (body.password) existing.password = body.password;
+
+        await existing.save();
+
+        const out = normalizeDocForClient(existing.toObject());
+        delete out.password;
+        return res.json({success: true, data: out });
+         
 
     } catch (err) {
+        console.error("updateDoctor error :", err)
+        return res.status(500).json({
+            success: false,
+            message: "Server Error",
+        });
+        
+    }
+}
 
+//  to delete Doctor 
+export async function deleteDoctor(req, res) {
+    try {
+        const {id} = req.params;
+        const existing = await Doctor.findById(id);
+        if (!existing) 
+            return res.status(400).json({
+            success:false,
+            message: "Doctor not found",
+        });
+
+        if (existing.imagePublicId){
+            try{
+                await deleteFromcloudinanry(existing.imagePublicId);
+            } catch (e) {
+                console.warn(" DeleteFromCloudinary warning :", e?.message || e);
+            }
+        }
+
+        await Doctor.findByAndDelete(id);
+        return res.json({success: true, message: "Doctor deleted successfully "})
+    } catch (err) {
+        console.error("deleteDoctor error :", err)
+        return res.status(500).json({
+            success: false,
+            message: "Server Error",
+        });
+        
+    }
+}
+
+// to toggle availability
+export async function toggleAvailabilty(req, res) {
+    try {
+        const { id } = req.params;
+
+        if (!req.doctor || String(req.doctor._id || req.doctor.id) !== String(id)) {
+            return res.status(403).json({
+                success: false,
+                message: "Not authorized to update this doctor's availability ",
+            });
+        }
+        
+    } catch (err) {
+        
     }
 }
