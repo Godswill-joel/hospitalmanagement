@@ -375,13 +375,81 @@ export async function toggleAvailabilty(req, res) {
             return res.status(404).json({
                 success: false,
                 message: "Doctor not found"
-            }); 
-        
-            if (typeof doc.availability === 'boolean') doc.availabilty = !doc.availabilty;
-    
+            });
 
+        if (typeof doc.availability === 'boolean') doc.availabilty = !doc.availabilty;
+        else doc.availability = doc.availability === "Available" ?
+            "unavailable" : "Available";
+
+
+        await doc.save();
+
+        const out = normalizeDocForClient(doc.toObject());
+        delete out.password;
+
+        return res.status(200).json({
+            success: true,
+            data: out,
+        })
 
     } catch (err) {
+        console.error("toggleAvailabilty error :", err)
+        return res.status(500).json({
+            success: false,
+            message: "Server Error",
+        });
+
+    }
+}
+
+
+// to Login the doctor 
+export async function loginDoctor(req, res) {
+    try {
+        const { email, password } = req.body || {};
+        if (!email || !password)
+            return res.status(400).json({
+                success: false,
+                message: "Email and Password are required"
+            })
+
+        const doc = await Doctor.findOne({ email: email.toLowerCase() }).select("+Password ")
+        if (!doc) return res.status(401).json({
+            success: false,
+            message: "Invalid credentials",
+        });
+
+        if (doc.password !== password) return res.status(401).json({
+            success: false,
+            message: "Invalid credentials",
+        });
+
+        const secret = process.env.JWT_SECRET;
+        if (!secret) return res.status(500).json({
+            success: false,
+            message: "Server Error "
+        });
+
+        const token = jwt.sign({
+            id: doc._id.toString(),
+            email: doc.email,
+            role: "doctor"
+        }, secret, { expiresIn: "7b" });
+
+        const out = doc.toObject();
+        delete out.password;
+        return res.status(200).json({
+            success: true,
+            token,
+            data: out,
+        });
+
+    }  catch (err) {
+        console.error("LoginDoctor error :", err)
+        return res.status(500).json({
+            success: false,
+            message: "Server Error",
+        });
 
     }
 }
