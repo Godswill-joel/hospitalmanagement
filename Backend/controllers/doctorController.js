@@ -1,5 +1,5 @@
-import Doctor from "../models/Doctors";
-import { uploadToCloudinary, deleteFromcloudinanry } from "../utilis/cloudinary";
+import Doctor from "../models/Doctors.js";
+import { uploadToCloudinary, deleteFromcloudinanry } from "../utilis/cloudinary.js";
 import jwt from "jsonwebtoken";
 
 
@@ -94,7 +94,7 @@ export async function createDoctor(req, res) {
             password: body.password,
             name: body.name,
             specialization: body.specialization || "",
-            imageUrl,
+            imageURl,
             imagePublicId,
             availability: body.availability || "Available",
             experience: body.experience || "",
@@ -122,7 +122,7 @@ export async function createDoctor(req, res) {
             id: doc._id.toString(),
             email: doc.email,
             role: "doctor"
-        }, secret, { expiresIn: "7b" });
+        }, secret, { expiresIn: "7d" });
 
         const out = normalizeDocForClient(doc.toObject());
         delete out.password;
@@ -413,12 +413,12 @@ export async function loginDoctor(req, res) {
                 message: "Email and Password are required"
             })
 
-        const doc = await Doctor.findOne({ email: email.toLowerCase() }).select("+Password ")
+        const doc = await Doctor.findOne({ email: email.toLowerCase() }).select("+password")
         if (!doc) return res.status(401).json({
             success: false,
             message: "Invalid credentials",
         });
-
+      
         if (doc.password !== password) return res.status(401).json({
             success: false,
             message: "Invalid credentials",
@@ -434,7 +434,7 @@ export async function loginDoctor(req, res) {
             id: doc._id.toString(),
             email: doc.email,
             role: "doctor"
-        }, secret, { expiresIn: "7b" });
+        }, secret, { expiresIn: "7d" });
 
         const out = doc.toObject();
         delete out.password;
@@ -444,7 +444,7 @@ export async function loginDoctor(req, res) {
             data: out,
         });
 
-    }  catch (err) {
+    } catch (err) {
         console.error("LoginDoctor error :", err)
         return res.status(500).json({
             success: false,

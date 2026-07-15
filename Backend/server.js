@@ -3,11 +3,13 @@ import cors from 'cors';
 import 'dotenv/config';
 import {clerkMiddleware} from '@clerk/express';
 import { connectDB } from "./config/db.js";
+import doctorRouter from "./routes/doctorRouter.js";
 
 
  
 const app = express();
 const port = 4000;
+// dotenv.config();
 
 
 
@@ -22,7 +24,7 @@ connectDB()
 
 
 //Routes
-
+app.use("/api/doctor", doctorRouter);
 
 app.get('/', (req, res) =>{
     res.send("API Working ")
