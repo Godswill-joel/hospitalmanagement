@@ -4,6 +4,7 @@ import 'dotenv/config';
 import {clerkMiddleware} from '@clerk/express';
 import { connectDB } from "./config/db.js";
 import doctorRouter from "./routes/doctorRouter.js";
+import serviceRouter from "./routes/serviceRouter.js";
 
 
  
@@ -25,6 +26,7 @@ connectDB()
 
 //Routes
 app.use("/api/doctor", doctorRouter);
+app.use("/api/service", serviceRouter);
 
 app.get('/', (req, res) =>{
     res.send("API Working ")
