@@ -186,8 +186,8 @@ export async function updateService(req, res) {
         }
 
         const updated  = await Service.findByIdAndUpdate(id, updateData, {
-            new: true,
-            runValidators
+           returnDocument: "after",
+            runValidators: true
         });
         return res.status(200).json({
             success: true,
